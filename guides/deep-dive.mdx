@@ -269,13 +269,31 @@ We use LLMs to automatically construct knowledge graphs from any subject.
     Chunk source text and extract all concepts, skills, and definitions
     
     ```python
-    # Example extraction
-    concepts = [
-        'quadratic equation',
-        'factoring',
-        'completing the square',
-        'discriminant'
-    ]
+    from openai import OpenAI
+    
+    client = OpenAI()
+    
+    def extract_concepts(text_chunk):
+        prompt = f"""You are an expert curriculum designer. 
+        Read the following text and extract all key concepts, skills, and definitions.
+        Output ONLY a JSON list of strings.
+        
+        Text: {text_chunk}
+        
+        Example output: ['quadratic equation', 'factoring', 'completing the square']
+        """
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        
+        return json.loads(response.choices[0].message.content)['concepts']
+    
+    # Extract concepts
+    concepts = extract_concepts(text_chunk)
+    # Output: ['quadratic equation', 'factoring', 'completing the square', 'discriminant']
     ```
   </Step>
 
@@ -283,16 +301,63 @@ We use LLMs to automatically construct knowledge graphs from any subject.
     LLM finds logical connections between concepts
     
     ```python
-    # Example relationships
-    relationships = [
-        ['factoring', 'is_prerequisite_for', 'solving quadratic equation'],
-        ['discriminant', 'is_part_of', 'quadratic formula']
-    ]
+    def extract_relationships(concepts):
+        prompt = f"""Here is a list of concepts: {concepts}
+        
+        Generate prerequisite relationships in format: [concept_A, 'relationship', concept_B]
+        Only include logically necessary relationships.
+        
+        Example: [['factoring', 'is_prerequisite_for', 'solving quadratic equation']]
+        """
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        
+        return json.loads(response.choices[0].message.content)['relationships']
+    
+    # Extract relationships
+    relationships = extract_relationships(concepts)
+    # Output: [
+    #   ['factoring', 'is_prerequisite_for', 'solving quadratic equation'],
+    #   ['discriminant', 'is_part_of', 'quadratic formula']
+    # ]
     ```
   </Step>
 
   <Step title="Graph Assembly">
     Merge entities and build graph database (Neo4j)
+    
+    ```python
+    from neo4j import GraphDatabase
+    
+    def build_knowledge_graph(concepts, relationships):
+        driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+        
+        with driver.session() as session:
+            # Create concept nodes
+            for concept in concepts:
+                session.run(
+                    "CREATE (c:Concept {name: $name})",
+                    name=concept
+                )
+            
+            # Create relationships
+            for rel in relationships:
+                session.run(
+                    "MATCH (a:Concept {name: $from}) "
+                    "MATCH (b:Concept {name: $to}) "
+                    f"CREATE (a)-[:{rel[1].upper().replace(' ', '_')}]->(b)",
+                    from=rel[0], to=rel[2]
+                )
+        
+        driver.close()
+    
+    # Build the graph
+    build_knowledge_graph(concepts, relationships)
+    ```
   </Step>
 </Steps>
 
@@ -376,14 +441,53 @@ Uplift = P(L | Hint) - P(L | No Hint)
   </Step>
 </Steps>
 
-### Example
+### Implementation Example
 
 ```python
-# For a new student in cognitive state X
-prob_with_hint = treated_model.predict(cognitive_state_X)  # 0.65
-prob_no_hint = control_model.predict(cognitive_state_X)    # 0.40
+from econml.metalearners import TLearner
+from sklearn.ensemble import RandomForestRegressor
+import pandas as pd
 
-uplift = 0.65 - 0.40  # +0.25 causal effect
+# Prepare data
+data = load_student_history()  # Load from database
+
+# Split into treated and control
+treated = data[data['received_intervention'] == True]
+control = data[data['received_intervention'] == False]
+
+# Extract features (cognitive state vector)
+features = ['mastery_prob', 'attempts', 'correct_rate', 
+            'avg_time', 'confidence', 'grit_score']
+
+# Train T-Learner
+t_learner = TLearner(
+    models=RandomForestRegressor(n_estimators=100)
+)
+
+X = data[features]
+T = data['received_intervention'].astype(int)
+y = data['mastery_improvement']
+
+t_learner.fit(X, T, y)
+
+# Predict uplift for a new student
+new_student_state = {
+    'mastery_prob': 0.35,
+    'attempts': 15,
+    'correct_rate': 0.47,
+    'avg_time': 120,
+    'confidence': 2,
+    'grit_score': 0.6
+}
+
+prob_with_hint = t_learner.model_t.predict([new_student_state])[0]   # 0.65
+prob_no_hint = t_learner.model_c.predict([new_student_state])[0]     # 0.40
+
+uplift = prob_with_hint - prob_no_hint  # +0.25 causal effect
+
+print(f"Intervention uplift: {uplift:.2f}")
+if uplift > 0.15:
+    print("High impact intervention - strongly recommended!")
 ```
 
 <Tip>

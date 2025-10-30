@@ -76,11 +76,12 @@
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "primary": {
-      "type": "button",
-      "label": "Get Started",
-      "href": "/quickstart"
-    }
+    "links": [
+      {
+        "label": "Get Started",
+        "href": "/quickstart"
+      }
+    ]
   },
   "contextual": {
     "options": [

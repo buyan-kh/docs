@@ -33,6 +33,7 @@
           {
             "group": "Advanced Topics",
             "pages": [
+              "guides/deep-dive",
               "guides/plateaus",
               "guides/integration",
               "guides/deployment"

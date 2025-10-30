@@ -178,6 +178,23 @@ Combine BKT mastery probability with velocity analysis and cognitive efficiency 
 BKT works best when students attempt at least 5-10 problems per skill. Below this threshold, mastery estimates are less reliable.
 </Info>
 
+## BKT in Our Multi-Model Architecture
+
+BKT is the foundation of our analytics engine, but we combine it with advanced models:
+
+<Info>
+**BKT provides the "what"** - interpretable mastery tracking for dashboards and analytics
+</Info>
+
+For deeper insights, we also use:
+- **SAKT (Self-Attentive KT)**: Attention weights show cognitive patterns
+- **DKT-Forget**: Models the forgetting curve for spaced repetition
+- **DTransformer**: Dynamic models that account for time gaps and spacing effects
+
+<Tip>
+See our [Technical Deep Dive](/guides/deep-dive) guide for details on how we combine BKT with these advanced models.
+</Tip>
+
 ## Research Background
 
 BKT is based on research from Carnegie Mellon University's Human-Computer Interaction Institute. Our implementation extends the classic model with:

@@ -1,0 +1,430 @@
+---
+title: "Technical Deep Dive"
+description: "Advanced machine learning models powering the Cognitive Learning Engine"
+---
+
+## Overview
+
+The Cognitive Learning Engine uses a sophisticated multi-model architecture combining multiple state-of-the-art machine learning techniques to understand and optimize learning at scale.
+
+## Architecture Philosophy
+
+<Info>
+We combine interpretable models (BKT) with predictive models (SAKT) and causal inference to build both an analytics engine and a brain model.
+</Info>
+
+### Dual-Core Engine Design
+
+Our system uses a **dual-core architecture**:
+
+- **Core Analytics Engine**: BKT for interpretable mastery tracking
+- **Cognitive Prediction Engine**: SAKT/Transformer for brain modeling
+- **Intervention Engine**: Reinforcement Learning for optimal teaching
+- **Causal Inference Engine**: Uplift modeling for strategy validation
+
+## Model 1: Bayesian Knowledge Tracing (BKT)
+
+### What It Does
+
+BKT provides interpretable mastery probabilities for every skill. It's the foundation of our analytics.
+
+<ParamField name="P(L0)" default="0.25" required>
+Prior knowledge probability - initial belief about mastery
+</ParamField>
+
+<ParamField name="P(T)" default="0.10" required>
+Learning rate - probability of learning after each attempt
+</ParamField>
+
+<ParamField name="P(G)" default="0.25" required>
+Guess probability - probability of correct answer without mastery
+</ParamField>
+
+<ParamField name="P(S)" default="0.10" required>
+Slip probability - probability of wrong answer despite mastery
+</ParamField>
+
+### Why We Use It
+
+<Tip>
+BKT is fast, interpretable, and gives clean mastery probabilities. Perfect for dashboards and analytics.
+</Tip>
+
+```python
+# Clean, interpretable output
+{
+    "skill": "quadratic_factoring",
+    "mastery_probability": 0.85,
+    "total_attempts": 24,
+    "correct_attempts": 20
+}
+```
+
+This mastery probability is the **ground truth** for our analytics engine.
+
+## Model 2: Deep Knowledge Tracing (DKT)
+
+### What It Is
+
+The original deep learning model for knowledge tracing, built on Recurrent Neural Networks (LSTM/GRU).
+
+### How It Works
+
+DKT reads a sequence of student answers and maintains a hidden state vector representing the student's entire knowledge state.
+
+<AccordionGroup>
+  <Accordion title="Example Sequence">
+    (question 1, correct), (question 2, wrong), (question 3, correct)...
+    
+    The model processes this sequence and updates its hidden state.
+  </Accordion>
+
+  <Accordion title="The Hidden State">
+    A giant vector of numbers that represents the student's knowledge. 
+    No interpretable meaning - just probabilities for the next answer.
+  </Accordion>
+</AccordionGroup>
+
+### The Pro
+
+Can capture long, complex patterns far beyond BKT's simple state transitions.
+
+### The Con
+
+<Warning>
+It's a "black box." The hidden state doesn't tell you mastery of "quadratic factoring" - just probabilities for every question. This makes it less useful for our cognition database.
+</Warning>
+
+## Model 3: Self-Attentive Knowledge Tracing (SAKT)
+
+### The "Brain Model"
+
+SAKT is our "brain modeling AI" based on the Transformer architecture.
+
+### How It Thinks
+
+Uses **Self-Attention** to model cognitive retrieval and focus:
+
+<Steps>
+  <Step title="Context Processing">
+    When predicting the next answer, SAKT looks back through the entire student history
+  </Step>
+
+  <Step title="Attention Weights">
+    Assigns importance weights to past interactions
+  </Step>
+
+  <Step title="Selective Retrieval">
+    Learns which past problems are relevant to the current one
+  </Step>
+</Steps>
+
+### Real-World Example
+
+<Info>
+Predicting a "quadratic equation" problem:
+- 80% attention to the "factoring" problem they got wrong 50 questions ago
+- 15% attention to the "polynomial division" problem they aced 10 questions ago  
+- 5% attention to the "geometry" problem they just did (irrelevant)
+</Info>
+
+### The Killer Feature
+
+<Check>
+**Visualizable attention weights.** You can see exactly what past concepts the student's "brain" is referencing. This is the core of our "we understand your brain" vision.
+</Check>
+
+```python
+# Attention weights provide interpretable insights
+attention_data = {
+    "current_problem": "quadratic_equation",
+    "past_references": [
+        {"problem": "factoring", "attention": 0.80, "days_ago": 5},
+        {"problem": "polynomial_division", "attention": 0.15, "days_ago": 2},
+        {"problem": "geometry", "attention": 0.05, "days_ago": 0.1}
+    ]
+}
+```
+
+This data feeds directly into our NomaDB as a **cognitive pattern**.
+
+## Model 4: DKT-Forget / DKT+
+
+### What It Adds
+
+Models the **Ebbinghaus forgetting curve** - a core principle of cognitive science.
+
+### The Innovation
+
+Standard BKT/DKT assumes once you learn something, mastery never decreases. DKT-Forget introduces **decay** based on time elapsed since last practice.
+
+<ComparisonTable>
+  <ComparisonRow
+    feature="Standard Models"
+    whatOursDoes="Mastery never decreases"
+    whatOursShouldDo="Permanent knowledge"
+  />
+  <ComparisonRow
+    feature="DKT-Forget"
+    whatOursDoes="Explicit forgetting curve"
+    whatOursShouldDo="Decay over time"
+  />
+  <ComparisonRow
+    feature="Application"
+    whatOursDoes="Simple tracking"
+    whatOursShouldDo="Spaced repetition engine"
+  />
+</ComparisonTable>
+
+### Why It Matters
+
+The model tells you exactly when mastery is about to drop, allowing you to trigger a review **before** forgetting occurs.
+
+```python
+# Predictive forgetting
+forgetting_alert = {
+    "skill": "quadratic_factoring",
+    "current_mastery": 0.85,
+    "predicted_mastery_7days": 0.72,
+    "recommendation": "Review in 5 days"
+}
+```
+
+## Model 5: DTransformer (Dynamic Transformer)
+
+### Next-Level SAKT
+
+An advanced version that explicitly models:
+- **Time gaps** between questions
+- **Number of repetitions**
+- **Spacing effects**
+
+### What It Learns
+
+Getting a question right **3 weeks** after you last saw it is a much stronger signal of mastery than getting it right **3 seconds** later (which is just short-term cramming).
+
+<Tip>
+This is how we measure true "Cognitive Efficiency Scoring" - distinguishing real learning from cramming.
+</Tip>
+
+## How We Combine Them
+
+### The Workflow
+
+<Steps>
+  <Step title="BKT Runs Dashboard">
+    Provides the **what** - interpretable mastery for every skill
+  </Step>
+
+  <Step title="SAKT Runs Intervention">
+    Provides the **why** - attention patterns showing why students are stuck
+  </Step>
+
+  <Step title="Causal Engine Validates">
+    Measures true impact of interventions
+  </Step>
+
+  <Step title="RL Agent Optimizes">
+    Learns optimal teaching strategies
+  </Step>
+</Steps>
+
+### Example Integration
+
+```python
+# Complete workflow
+async def process_student_answer(user_id, skill_id, is_correct):
+    # 1. BKT: Update mastery
+    bkt_result = await bkt_engine.update_mastery(user_id, skill_id, is_correct)
+    
+    # 2. SAKT: Predict next answer
+    sakt_prediction = await sakt_model.predict(user_id, skill_id)
+    attention_weights = sakt_prediction['attention']
+    
+    # 3. Store cognitive patterns in NomaDB
+    if attention_weights:
+        await nomadb.store_pattern(user_id, skill_id, attention_weights)
+    
+    # 4. RL agent decides intervention
+    if bkt_result['plateau_detected']:
+        intervention = await rl_agent.choose_action(
+            state=cognitive_state_vector,
+            user_id=user_id
+        )
+        await trigger_intervention(intervention)
+    
+    return bkt_result
+```
+
+## Knowledge Graph Construction
+
+### Automatic Curriculum Mapping
+
+We use LLMs to automatically construct knowledge graphs from any subject.
+
+### The 3-Step LLM Pipeline
+
+<Steps>
+  <Step title="Key Concept Extraction">
+    Chunk source text and extract all concepts, skills, and definitions
+    
+    ```python
+    # Example extraction
+    concepts = [
+        'quadratic equation',
+        'factoring',
+        'completing the square',
+        'discriminant'
+    ]
+    ```
+  </Step>
+
+  <Step title="Prerequisite Relationships">
+    LLM finds logical connections between concepts
+    
+    ```python
+    # Example relationships
+    relationships = [
+        ['factoring', 'is_prerequisite_for', 'solving quadratic equation'],
+        ['discriminant', 'is_part_of', 'quadratic formula']
+    ]
+    ```
+  </Step>
+
+  <Step title="Graph Assembly">
+    Merge entities and build graph database (Neo4j)
+  </Step>
+</Steps>
+
+<Check>
+This creates a **scalable factory** that can map any subject automatically. Competitors can't copy because it's generated on the fly.
+</Check>
+
+## Reinforcement Learning for Teaching
+
+### The Pedagogical Policy
+
+An AI agent that learns which teaching strategies work best for each cognitive state.
+
+<ParamField name="Agent" required>
+The "Teacher" (our system)
+</ParamField>
+
+<ParamField name="Environment" required>
+The "Student"
+</ParamField>
+
+<ParamField name="State (S)" required>
+Cognitive State Vector containing:
+- BKT mastery probabilities
+- Response history
+- Cognitive load proxies
+</ParamField>
+
+<ParamField name="Action (A)" required>
+Intervention chosen from NomaDB:
+- Show worked example
+- Show hint
+- Present prerequisite problem
+- Do nothing
+</ParamField>
+
+<ParamField name="Reward (R)" required>
+Change in BKT mastery: ΔP(L)
+</ParamField>
+
+### Why This Works
+
+<Info>
+The RL agent learns that showing a hint in a specific cognitive state increases mastery from 0.35 to 0.55. It discovers patterns no human curriculum designer could find.
+</Info>
+
+## Causal Inference Engine
+
+### The Problem
+
+<Warning>
+Massive selection bias: We give hints to struggling students. You can't compare "students who got hints" to "students who didn't" because they're fundamentally different groups.
+</Warning>
+
+### The Solution: Uplift Modeling
+
+<ParamField name="Individual Treatment Effect (ITE)" required>
+The exact increase in mastery if you show the hint vs. not showing it
+</ParamField>
+
+### Uplift Formula
+
+```
+Uplift = P(L | Hint) - P(L | No Hint)
+```
+
+### How It Works
+
+<Steps>
+  <Step title="Split Data">
+    Create two datasets: Treated (got intervention) and Control (didn't)
+  </Step>
+
+  <Step title="Train Two Models">
+    Model 1: P(L) for Treated group
+    Model 2: P(L) for Control group
+  </Step>
+
+  <Step title="Predict Uplift">
+    Predict both outcomes for new student and calculate difference
+  </Step>
+</Steps>
+
+### Example
+
+```python
+# For a new student in cognitive state X
+prob_with_hint = treated_model.predict(cognitive_state_X)  # 0.65
+prob_no_hint = control_model.predict(cognitive_state_X)    # 0.40
+
+uplift = 0.65 - 0.40  # +0.25 causal effect
+```
+
+<Tip>
+This populates your NomaDB with quantified teaching strategies. You'll discover that "Video Hint A" has huge uplift for low-knowledge/high-grit students, while "Text Hint B" works better for high-knowledge students who just made a slip.
+</Tip>
+
+## Technical Stack
+
+<CardGroup cols={2}>
+  <Card title="Core Models" icon="cpu">
+- BKT: pyBKT
+- SAKT: PyTorch Transformers
+- DKT variants: TensorFlow/Keras
+- RL: Stable Baselines3
+- Causal: EconML or CausalML
+  </Card>
+
+  <Card title="Infrastructure" icon="server">
+- Graph DB: Neo4j
+- LLMs: GPT-4o or Llama 3
+- Vector DB: ChromaDB (optional)
+- API: FastAPI
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Bayesian Knowledge Tracing"
+    icon="waveform-lines"
+    href="/guides/bkt"
+  >
+    Learn about BKT in detail
+  </Card>
+  <Card
+    title="Integration Guide"
+    icon="plug"
+    href="/guides/integration"
+  >
+    See how to integrate these models
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,184 @@
+---
+title: "Track Answer"
+description: "Record learning events and update mastery tracking"
+---
+
+## POST /api/v1/track-answer
+
+Track a learning event and update all relevant cognitive analytics.
+
+## Request
+
+<ParamField object name="body" required>
+  <ParamField name="user_id" type="string" required>
+    Unique identifier for the student
+  </ParamField>
+  <ParamField name="skill_id" type="string" required>
+    Unique identifier for the skill/topic
+  </ParamField>
+  <ParamField name="is_correct" type="boolean" required>
+    Whether the answer was correct
+  </ParamField>
+  <ParamField name="time_spent_seconds" type="integer">
+    Time spent on the question in seconds
+  </ParamField>
+  <ParamField name="confidence_score" type="integer" default="3">
+    Self-reported confidence (1-5 scale)
+  </ParamField>
+  <ParamField name="question_difficulty" type="float">
+    Question difficulty (-3 to +3 scale)
+  </ParamField>
+</ParamField>
+
+### Headers
+
+<ParamField name="X-API-Key" type="string" required>
+Your API key for authentication
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+```python Python SDK
+result = await engine.track_answer(
+    user_id="student_123",
+    skill_id="algebra_linear",
+    is_correct=True,
+    time_spent_seconds=45,
+    confidence_score=4
+)
+```
+
+```bash cURL
+curl -X POST "https://api.cognition-engine.com/api/v1/track-answer" \
+  -H "X-API-Key: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "student_123",
+    "skill_id": "algebra_linear",
+    "is_correct": true,
+    "time_spent_seconds": 45,
+    "confidence_score": 4
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.cognition-engine.com/api/v1/track-answer', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'your-api-key',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    user_id: 'student_123',
+    skill_id: 'algebra_linear',
+    is_correct: true,
+    time_spent_seconds: 45,
+    confidence_score: 4
+  })
+});
+```
+</CodeGroup>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+Operation success status
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <ResponseField name="mastery_before" type="float">
+    Mastery probability before this attempt
+  </ResponseField>
+  <ResponseField name="mastery_after" type="float">
+    Updated mastery probability after this attempt
+  </ResponseField>
+  <ResponseField name="velocity" type="float">
+    Change in mastery (after - before)
+  </ResponseField>
+  <ResponseField name="plateau_detected" type="boolean">
+    Whether learning plateau was detected
+  </ResponseField>
+  <ResponseField name="total_attempts" type="integer">
+    Total attempts for this skill
+  </ResponseField>
+  <ResponseField name="correct_attempts" type="integer">
+    Total correct attempts for this skill
+  </ResponseField>
+</ResponseField>
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "mastery_before": 0.65,
+    "mastery_after": 0.72,
+    "velocity": 0.07,
+    "plateau_detected": false,
+    "total_attempts": 24,
+    "correct_attempts": 19,
+    "recommendation": null
+  },
+  "message": "Learning event tracked successfully"
+}
+```
+
+## What Happens Under the Hood
+
+<Steps>
+  <Step title="BKT Update">
+    Bayesian Knowledge Tracing updates mastery probability based on the answer
+  </Step>
+  <Step title="Velocity Calculation">
+    Learning velocity is calculated from mastery change
+  </Step>
+  <Step title="Plateau Check">
+    System checks for learning plateau indicators
+  </Step>
+  <Step title="Efficiency Analysis">
+    Cognitive efficiency metrics are updated
+  </Step>
+  <Step title="Return Results">
+    Updated analytics are returned to the caller
+  </Step>
+</Steps>
+
+## Status Codes
+
+<ResponseStatus code="200" display="Success">
+  Learning event tracked successfully
+</ResponseStatus>
+
+<ResponseStatus code="400" display="Bad Request">
+  Invalid request parameters
+</ResponseStatus>
+
+<ResponseStatus code="401" display="Unauthorized">
+  Invalid or missing API key
+</ResponseStatus>
+
+<ResponseStatus code="500" display="Server Error">
+  Internal server error
+</ResponseStatus>
+
+## Related Endpoints
+
+<CardGroup cols={2}>
+  <Card
+    title="Get Predictions"
+    icon="crystal-ball"
+    href="/api-reference/endpoint/predictions"
+  >
+    Retrieve score predictions based on tracked data
+  </Card>
+  <Card
+    title="Learning Velocity"
+    icon="gauge"
+    href="/api-reference/endpoint/velocity"
+  >
+    Get detailed velocity analytics
+  </Card>
+</CardGroup>
+

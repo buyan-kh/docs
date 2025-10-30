@@ -1,0 +1,249 @@
+---
+title: "Cognitive Efficiency"
+description: "Measure how effectively students learn"
+---
+
+## What is Cognitive Efficiency?
+
+Cognitive efficiency is a comprehensive metric that measures how effectively students process information, combining correctness, time spent, and confidence to provide a holistic view of learning effectiveness.
+
+## The Efficiency Formula
+
+Cognitive efficiency combines multiple factors:
+
+```
+Efficiency = (Correctness × Confidence) / Time
+```
+
+Where:
+- **Correctness**: 1 for correct, 0 for incorrect
+- **Confidence**: Self-reported 1-5 scale
+- **Time**: Time spent on question in seconds
+
+<Info>
+Higher efficiency scores indicate students who answer correctly, with high confidence, and minimal time - the ideal learning state.
+</Info>
+
+## Efficiency Dimensions
+
+### Time Efficiency
+
+How quickly students solve problems without sacrificing accuracy:
+
+```python
+time_efficiency = {
+    "fast_correct": 25,      # <30s, correct
+    "moderate_correct": 15,  # 30-60s, correct
+    "slow_correct": 10,      # >60s, correct
+    "incorrect": 0           # Any time, wrong
+}
+```
+
+### Confidence Accuracy
+
+Alignment between confidence and correctness:
+
+```python
+confidence_alignment = {
+    "high_conf_correct": 1.0,      # Confident and right
+    "low_conf_correct": 0.6,       # Uncertain but right
+    "high_conf_wrong": 0.0,        # Confident but wrong
+    "low_conf_wrong": 0.2          # Uncertain and wrong
+}
+```
+
+### Learning Efficiency Trends
+
+Track efficiency over time to identify improvement or decline:
+
+```python
+efficiency_trend = {
+    "current_efficiency": 0.75,
+    "trend_7_days": "improving",
+    "trend_30_days": "stable",
+    "peak_efficiency": 0.85
+}
+```
+
+## Usage Example
+
+```python
+from cognition_engine import CognitionEngine
+
+engine = CognitionEngine(supabase_url, supabase_key)
+
+# Get efficiency metrics
+efficiency = await engine.get_cognitive_efficiency("student_123")
+
+print(f"Overall efficiency: {efficiency['overall_efficiency']:.2f}")
+print(f"Time efficiency: {efficiency['time_efficiency']:.2f}")
+print(f"Trend: {efficiency['efficiency_trend']}")
+```
+
+## Efficiency Patterns
+
+### High Efficiency Pattern
+
+<AccordionGroup>
+  <Accordion title="Characteristics">
+    Quick correct answers with high confidence. Students understand concepts deeply and apply them efficiently.
+  </Accordion>
+
+  <Accordion title="Implications">
+    Ready for increased difficulty or new topics. Strong foundation allows faster advancement.
+  </Accordion>
+
+  <Accordion title="Recommendations">
+    Challenge with harder problems. Introduce advanced topics.
+  </Accordion>
+</AccordionGroup>
+
+### Moderate Efficiency Pattern
+
+<AccordionGroup>
+  <Accordion title="Characteristics">
+    Correct answers but take longer or show uncertainty. Students understand but need reinforcement.
+  </Accordion>
+
+  <Accordion title="Implications">
+    Good grasp of concepts but not yet automatic. More practice will improve speed and confidence.
+  </Accordion>
+
+  <Accordion title="Recommendations">
+    Continue current difficulty level. Focus on similar problems to build fluency.
+  </Accordion>
+</AccordionGroup>
+
+### Low Efficiency Pattern
+
+<AccordionGroup>
+  <Accordion title="Characteristics">
+    Slow progress with frequent errors or low confidence. Students struggle with concepts.
+  </Accordion>
+
+  <Accordion title="Implications">
+    Foundation skills may be weak. May need review or easier problems.
+  </Accordion>
+
+  <Accordion title="Recommendations">
+    Lower difficulty. Review fundamentals. Increase practice frequency.
+  </Accordion>
+</AccordionGroup>
+
+## Efficiency by Skill
+
+Track efficiency across different topics:
+
+```python
+skill_efficiency = {
+    "algebra": 0.85,        # Strong efficiency
+    "geometry": 0.72,       # Good efficiency
+    "trigonometry": 0.45,   # Low efficiency - needs attention
+    "statistics": 0.78      # Good efficiency
+}
+
+# Identify skills needing improvement
+weak_skills = [skill for skill, eff in skill_efficiency.items() 
+               if eff < 0.60]
+print(f"Skills to focus on: {weak_skills}")
+```
+
+## Integration with BKT
+
+Cognitive efficiency enhances BKT mastery estimates:
+
+<ComparisonTable>
+  <ComparisonRow
+    feature="BKT Only"
+    whatOursDoes="Mastery probability"
+    whatOursShouldDo="Based on correctness"
+  />
+  <ComparisonRow
+    feature="BKT + Efficiency"
+    whatOursDoes="Weighted mastery"
+    whatOursShouldDo="Correctness, time, confidence"
+  />
+  <ComparisonRow
+    feature="Accuracy"
+    whatOursDoes="Good"
+    whatOursShouldDo="Better"
+  />
+  <ComparisonRow
+    feature="Granularity"
+    whatOursDoes="Know/Don't know"
+    whatOursShouldDo="Fluency levels"
+  />
+</ComparisonTable>
+
+## Cognitive Load Indicators
+
+Monitor signs of cognitive overload:
+
+### Warning Signs
+
+- **Increasing time**: Problems taking longer than expected
+- **Answer changes**: Frequent corrections suggest uncertainty
+- **Low confidence**: Despite correct answers
+- **Declining efficiency**: Trend over recent sessions
+
+### Intervention Triggers
+
+```python
+if efficiency['cognitive_load_warning']:
+    print("High cognitive load detected")
+    print("Recommendations:")
+    print("- Reduce session length")
+    print("- Lower difficulty temporarily")
+    print("- Increase breaks between problems")
+```
+
+## Performance Snapshots
+
+Capture comprehensive efficiency profiles:
+
+```python
+snapshot = await engine.create_performance_snapshot("student_123")
+
+efficiency_profile = {
+    "overall_efficiency": 0.75,
+    "cognitive_efficiency_score": 0.68,
+    "time_efficiency": 0.82,
+    "confidence_accuracy": 0.91,
+    "peak_performance_time": "morning",
+    "cognitive_load": "moderate"
+}
+```
+
+## Best Practices
+
+<Tip>
+Monitor efficiency trends over 7-day periods. Short-term fluctuations are normal, but sustained patterns indicate real changes.
+</Tip>
+
+<Warning>
+Don't prioritize efficiency over understanding. Some problems naturally take more time. High efficiency is good, but mastery is the goal.
+</Warning>
+
+<Info>
+Combine efficiency metrics with mastery probability and velocity for the most complete picture of student learning.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Learning Velocity"
+    icon="gauge"
+    href="/guides/velocity"
+  >
+    See how efficiency influences velocity calculations
+  </Card>
+  <Card
+    title="Plateau Detection"
+    icon="exclamation-triangle"
+    href="/guides/plateaus"
+  >
+    Understand how efficiency helps detect plateaus
+  </Card>
+</CardGroup>
+

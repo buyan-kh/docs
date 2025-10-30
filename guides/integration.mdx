@@ -1,0 +1,391 @@
+---
+title: "Integration Guide"
+description: "Integrate cognitive intelligence into your platform"
+---
+
+## Overview
+
+This guide walks through integrating the Cognitive Learning Engine into an existing EdTech platform.
+
+## Integration Approaches
+
+### Option 1: Python SDK (Recommended)
+
+Best for: Python-based platforms, quickest integration
+
+```python
+from cognition_engine import CognitionEngine
+
+# Initialize
+engine = CognitionEngine(
+    supabase_url="your-supabase-url",
+    supabase_key="your-supabase-key"
+)
+
+# Track learning events
+result = await engine.track_answer(
+    user_id="student_123",
+    skill_id="algebra_001",
+    is_correct=True,
+    time_spent_seconds=45,
+    confidence_score=4
+)
+```
+
+### Option 2: REST API
+
+Best for: Multi-language platforms, microservices
+
+```python
+import requests
+
+# Track event via API
+response = requests.post(
+    "https://api.cognition-engine.com/api/v1/track-answer",
+    headers={"X-API-Key": "your-api-key"},
+    json={
+        "user_id": "student_123",
+        "skill_id": "algebra_001",
+        "is_correct": True,
+        "time_spent_seconds": 45,
+        "confidence_score": 4
+    }
+)
+```
+
+## Step-by-Step Integration
+
+### Step 1: Set Up Environment
+
+<Steps>
+  <Step title="Install SDK">
+```bash
+pip install cognition-engine-sdk
+```
+  </Step>
+
+  <Step title="Configure Credentials">
+```python
+import os
+os.environ["SUPABASE_URL"] = "your-url"
+os.environ["SUPABASE_KEY"] = "your-key"
+```
+  </Step>
+
+  <Step title="Initialize Engine">
+```python
+from cognition_engine import CognitionEngine
+engine = CognitionEngine(supabase_url, supabase_key)
+```
+  </Step>
+</Steps>
+
+### Step 2: Integrate Answer Tracking
+
+Modify your answer submission handler:
+
+```python
+# Before
+async def submit_answer(user_id, question_id, answer):
+    is_correct = validate_answer(answer)
+    return {"correct": is_correct}
+
+# After
+async def submit_answer(user_id, question_id, answer):
+    is_correct = validate_answer(answer)
+    
+    # Track with cognitive engine
+    question = await get_question(question_id)
+    result = await engine.track_answer(
+        user_id=user_id,
+        skill_id=question.skill_id,
+        is_correct=is_correct,
+        time_spent_seconds=calculate_time(),
+        confidence_score=answer.confidence
+    )
+    
+    # Use insights for personalization
+    if result['plateau_detected']:
+        await trigger_intervention(user_id, question.skill_id)
+    
+    return {
+        "correct": is_correct,
+        "mastery": result['mastery_after'],
+        "recommendation": result.get('recommendation')
+    }
+```
+
+### Step 3: Add Analytics Dashboard
+
+Create real-time insights:
+
+```python
+async def get_student_dashboard(user_id):
+    # Get comprehensive analytics
+    predictions = await engine.get_predictions(user_id)
+    velocity = await engine.get_learning_velocity(user_id)
+    
+    return {
+        "current_progress": {
+            "math_score": predictions["current_math"],
+            "rw_score": predictions["current_rw"],
+            "total": predictions["current_total"]
+        },
+        "predictions": {
+            "30_day_target": predictions["predicted_total_in_30_days"],
+            "goal_progress": predictions["goal_tracking"]["progress_percent"],
+            "days_to_goal": predictions["goal_tracking"]["days_to_goal"]
+        },
+        "learning_health": {
+            "momentum": velocity["momentum_score"],
+            "velocity_trend": velocity["velocity_trend"],
+            "plateau_warning": velocity.get("plateau_warning", False)
+        },
+        "recommendations": predictions["recommendations"]
+    }
+```
+
+## Integration Patterns
+
+### Pattern 1: Minimal Integration
+
+Add tracking only:
+
+```python
+# Simple tracking without response handling
+try:
+    await engine.track_answer(user_id, skill_id, is_correct, time, confidence)
+except:
+    pass  # Non-blocking
+```
+
+### Pattern 2: Full Integration
+
+Complete cognitive intelligence:
+
+```python
+# Track and respond to insights
+result = await engine.track_answer(...)
+
+# Respond to insights
+if result['plateau_detected']:
+    await adjust_difficulty(user_id, skill_id, "easier")
+if result['velocity'] > 0.1:
+    await increase_difficulty(user_id, skill_id)
+if result['mastery_after'] > 0.9:
+    await unlock_next_skill(user_id, skill_id)
+```
+
+### Pattern 3: Batch Processing
+
+For offline or asynchronous processing:
+
+```python
+# Collect events
+events = []
+for answer in answers:
+    events.append({
+        "user_id": user_id,
+        "skill_id": answer.skill_id,
+        "is_correct": answer.correct,
+        "time_spent_seconds": answer.time,
+        "confidence_score": answer.confidence
+    })
+
+# Batch process
+await engine.batch_track_answers(events)
+```
+
+## Common Use Cases
+
+### Use Case 1: Adaptive Difficulty
+
+```python
+async def get_next_question(user_id, skill_id):
+    # Get current mastery
+    velocity = await engine.get_learning_velocity(user_id, skill_id)
+    
+    # Adjust difficulty based on momentum
+    if velocity['momentum_score'] > 70:
+        difficulty = "hard"
+    elif velocity['momentum_score'] > 40:
+        difficulty = "medium"
+    else:
+        difficulty = "easy"
+    
+    return await select_question(skill_id, difficulty)
+```
+
+### Use Case 2: Intervention Triggers
+
+```python
+async def check_interventions(user_id):
+    # Check all skills for plateaus
+    skills = await get_all_skills(user_id)
+    
+    for skill in skills:
+        status = await engine.check_plateau_status(user_id, skill.id)
+        
+        if status['is_plateauing']:
+            await send_intervention_notification(
+                user_id=user_id,
+                skill_name=skill.name,
+                recommendation=status['recommendations'][0]
+            )
+```
+
+### Use Case 3: Progress Reporting
+
+```python
+async def generate_progress_report(user_id, parent_email):
+    predictions = await engine.get_predictions(user_id)
+    velocity = await engine.get_learning_velocity(user_id)
+    
+    report = f"""
+    Progress Report for {user_id}
+    ----------------------------
+    Current Score: {predictions['current_total']}
+    Predicted Score (30 days): {predictions['predicted_total_in_30_days']}
+    Goal Progress: {predictions['goal_tracking']['progress_percent']}%
+    
+    Learning Health:
+    - Momentum: {velocity['momentum_score']}/100
+    - Trend: {velocity['velocity_trend']}
+    
+    Recommendations:
+    {chr(10).join(predictions['recommendations'])}
+    """
+    
+    await send_email(parent_email, report)
+```
+
+## Error Handling
+
+### Graceful Degradation
+
+```python
+async def track_with_fallback(user_id, skill_id, is_correct, time, confidence):
+    try:
+        result = await engine.track_answer(user_id, skill_id, is_correct, time, confidence)
+        return result
+    except Exception as e:
+        # Log error but don't break user experience
+        logger.error(f"Cognitive engine error: {e}")
+        return {"mastery_after": 0.5, "plateau_detected": False}
+```
+
+### Retry Logic
+
+```python
+import asyncio
+
+async def track_with_retry(user_id, skill_id, is_correct, time, confidence, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            result = await engine.track_answer(user_id, skill_id, is_correct, time, confidence)
+            return result
+        except Exception as e:
+            if attempt < max_retries - 1:
+                await asyncio.sleep(2 ** attempt)  # Exponential backoff
+            else:
+                raise
+```
+
+## Performance Optimization
+
+### Caching
+
+```python
+from functools import lru_cache
+import redis
+
+redis_client = redis.Redis()
+
+@lru_cache(maxsize=1000)
+async def get_cached_velocity(user_id, skill_id):
+    cache_key = f"velocity:{user_id}:{skill_id}"
+    cached = redis_client.get(cache_key)
+    
+    if cached:
+        return json.loads(cached)
+    
+    velocity = await engine.get_learning_velocity(user_id, skill_id)
+    redis_client.setex(cache_key, 300, json.dumps(velocity))
+    return velocity
+```
+
+### Async Processing
+
+```python
+import asyncio
+
+async def process_answer_async(user_id, question_id, answer):
+    # Respond immediately to user
+    response = {"correct": answer.correct}
+    
+    # Process cognitive analytics asynchronously
+    asyncio.create_task(
+        track_cognitive_event(user_id, question_id, answer)
+    )
+    
+    return response
+```
+
+## Testing Your Integration
+
+### Unit Tests
+
+```python
+import pytest
+
+async def test_basic_tracking():
+    result = await engine.track_answer(
+        user_id="test_user",
+        skill_id="test_skill",
+        is_correct=True,
+        time_spent_seconds=45,
+        confidence_score=4
+    )
+    
+    assert result['mastery_after'] > result['mastery_before']
+    assert 0 <= result['mastery_after'] <= 1
+```
+
+### Integration Tests
+
+```python
+async def test_plateau_detection():
+    # Simulate plateau conditions
+    for i in range(10):
+        await engine.track_answer(
+            user_id="test_user",
+            skill_id="test_skill",
+            is_correct=False,  # Wrong answers
+            time_spent_seconds=120,
+            confidence_score=2
+        )
+    
+    # Check for plateau
+    result = await engine.track_answer(...)
+    assert result['plateau_detected'] == True
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api/introduction"
+  >
+    Explore the complete API documentation
+  </Card>
+  <Card
+    title="Deployment"
+    icon="rocket"
+    href="/guides/deployment"
+  >
+    Learn how to deploy the engine in production
+  </Card>
+</CardGroup>
+

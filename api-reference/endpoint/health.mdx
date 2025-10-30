@@ -1,0 +1,47 @@
+---
+title: "Health Check"
+description: "Monitor service health and status"
+---
+
+## GET /api/v1/health
+
+Check the health and status of the Cognitive Learning Engine service.
+
+## Request
+
+No parameters required.
+
+## Response
+
+<ResponseField name="status" type="string">
+Service status: "healthy" or "unhealthy"
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+Current server timestamp
+</ResponseField>
+
+<ResponseField name="version" type="string">
+API version number
+</ResponseField>
+
+<ResponseField name="uptime" type="integer">
+Service uptime in seconds
+</ResponseField>
+
+### Example Response
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "version": "1.0.0",
+  "uptime": 86400
+}
+```
+
+## Status Codes
+
+<ResponseStatus code="200" display="Success">Service is healthy</ResponseStatus>
+<ResponseStatus code="503" display="Service Unavailable">Service is unhealthy</ResponseStatus>
+

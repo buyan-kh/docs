@@ -1,33 +1,157 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Overview"
+description: "Complete API reference for the Cognitive Learning Engine"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Getting Started
 
-## Welcome
+The Cognitive Learning Engine provides a RESTful API for integrating cognitive intelligence into your EdTech platform.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Base URL
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+<CodeGroup>
+```bash Production
+https://api.cognition-engine.com
+```
+
+```bash Development
+http://localhost:8000
+```
+</CodeGroup>
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API requests require an API key in the header:
+
+```bash
+X-API-Key: your-api-key-here
+```
+
+<Info>
+Get your API key by contacting support or signing up for an account.
+</Info>
+
+## Response Format
+
+All API responses follow this structure:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "success": true,
+  "data": { },
+  "message": "Operation successful"
+}
 ```
+
+### Error Responses
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Invalid user_id provided"
+  }
+}
+```
+
+## Rate Limits
+
+<Warning>
+API rate limits: 100 requests per minute per API key
+</Warning>
+
+## Core Endpoints
+
+<CardGroup cols={2}>
+  <Card
+    title="Track Answer"
+    icon="pencil"
+    href="/api-reference/endpoint/track-answer"
+  >
+    Record learning events and update mastery
+  </Card>
+  <Card
+    title="Get Predictions"
+    icon="crystal-ball"
+    href="/api-reference/endpoint/predictions"
+  >
+    Retrieve score predictions and goal tracking
+  </Card>
+  <Card
+    title="Learning Velocity"
+    icon="gauge"
+    href="/api-reference/endpoint/velocity"
+  >
+    Analyze learning momentum and trends
+  </Card>
+  <Card
+    title="Health Check"
+    icon="heart-pulse"
+    href="/api-reference/endpoint/health"
+  >
+    Monitor service health
+  </Card>
+</CardGroup>
+
+## SDK Support
+
+<CodeGroup>
+```python Python SDK
+pip install cognition-engine-sdk
+```
+
+```javascript JavaScript SDK
+npm install cognition-engine
+```
+
+```bash cURL
+curl -X POST "https://api.cognition-engine.com/api/v1/track-answer" \
+  -H "X-API-Key: your-key" \
+  -d '{"user_id": "student", "skill_id": "math", "is_correct": true}'
+```
+</CodeGroup>
+
+## Quick Start Example
+
+```python
+from cognition_engine import CognitionEngine
+
+# Initialize
+engine = CognitionEngine(
+    supabase_url="your-supabase-url",
+    supabase_key="your-supabase-key"
+)
+
+# Track learning event
+result = await engine.track_answer(
+    user_id="student_123",
+    skill_id="algebra_001",
+    is_correct=True,
+    time_spent_seconds=45,
+    confidence_score=4
+)
+
+# Get predictions
+predictions = await engine.get_predictions("student_123")
+print(f"Predicted score: {predictions['predicted_total_in_30_days']}")
+```
+
+## Support
+
+<CardGroup cols={2}>
+  <Card
+    title="Documentation"
+    icon="book"
+    href="/guides/overview"
+  >
+    Browse guides and tutorials
+  </Card>
+  <Card
+    title="Contact Support"
+    icon="envelope"
+    href="mailto:support@cognition-engine.com"
+  >
+    Get help from our team
+  </Card>
+</CardGroup>

@@ -1,0 +1,128 @@
+---
+title: "Get Predictions"
+description: "Retrieve score predictions and goal tracking"
+---
+
+## GET /api/v1/predictions/{user_id}
+
+Get predictive analytics including score forecasts, goal tracking, and study recommendations.
+
+## Request
+
+<ParamField name="user_id" path required>
+Unique identifier for the student
+</ParamField>
+
+### Query Parameters
+
+<ParamField name="days" default="30">
+Number of days to project forward for predictions
+</ParamField>
+
+### Headers
+
+<ParamField name="X-API-Key" type="string" required>
+Your API key for authentication
+</ParamField>
+
+## Response
+
+<ResponseField name="current_math" type="integer">
+Current SAT Math score
+</ResponseField>
+
+<ResponseField name="current_rw" type="integer">
+Current Reading/Writing score
+</ResponseField>
+
+<ResponseField name="current_total" type="integer">
+Current total SAT score
+</ResponseField>
+
+<ResponseField name="predicted_math_in_30_days" type="integer">
+Predicted Math score in 30 days
+</ResponseField>
+
+<ResponseField name="predicted_rw_in_30_days" type="integer">
+Predicted Reading/Writing score in 30 days
+</ResponseField>
+
+<ResponseField name="predicted_total_in_30_days" type="integer">
+Predicted total score in 30 days
+</ResponseField>
+
+<ResponseField name="confidence_intervals" type="object">
+  <ResponseField name="math" type="object">
+    <ResponseField name="low" type="integer">Lower bound</ResponseField>
+    <ResponseField name="high" type="integer">Upper bound</ResponseField>
+  </ResponseField>
+  <ResponseField name="rw" type="object">...</ResponseField>
+  <ResponseField name="total" type="object">...</ResponseField>
+</ResponseField>
+
+<ResponseField name="goal_tracking" type="object">
+  <ResponseField name="target_score" type="integer">Goal score</ResponseField>
+  <ResponseField name="days_to_goal" type="integer">Estimated days to reach goal</ResponseField>
+  <ResponseField name="progress_percent" type="float">Current progress as percentage</ResponseField>
+  <ResponseField name="on_track" type="boolean">Whether trajectory reaches goal</ResponseField>
+</ResponseField>
+
+### Example Request
+
+<CodeGroup>
+```python Python SDK
+predictions = await engine.get_predictions("student_123")
+```
+
+```bash cURL
+curl "https://api.cognition-engine.com/api/v1/predictions/student_123" \
+  -H "X-API-Key: your-api-key"
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://api.cognition-engine.com/api/v1/predictions/student_123',
+  {
+    headers: { 'X-API-Key': 'your-api-key' }
+  }
+);
+```
+</CodeGroup>
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "current_math": 620,
+    "current_rw": 580,
+    "current_total": 1200,
+    "predicted_math_in_30_days": 680,
+    "predicted_rw_in_30_days": 640,
+    "predicted_total_in_30_days": 1320,
+    "confidence_intervals": {
+      "math": {"low": 660, "high": 700},
+      "rw": {"low": 620, "high": 660},
+      "total": {"low": 1290, "high": 1350}
+    },
+    "goal_tracking": {
+      "target_score": 1400,
+      "days_to_goal": 45,
+      "progress_percent": 75,
+      "on_track": true
+    },
+    "recommendations": [
+      "Focus on Reading/Writing fundamentals",
+      "Increase practice frequency by 20%"
+    ]
+  }
+}
+```
+
+## Status Codes
+
+<ResponseStatus code="200" display="Success">Predictions retrieved successfully</ResponseStatus>
+<ResponseStatus code="404" display="Not Found">User not found</ResponseStatus>
+<ResponseStatus code="401" display="Unauthorized">Invalid API key</ResponseStatus>
+

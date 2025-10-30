@@ -1,0 +1,270 @@
+---
+title: "Plateau Detection"
+description: "Identify learning plateaus and trigger interventions"
+---
+
+## Understanding Learning Plateaus
+
+A learning plateau occurs when a student's progress stalls despite continued practice. Early detection allows for timely interventions that can restart learning momentum.
+
+## How We Detect Plateaus
+
+### Three Primary Indicators
+
+<ParamField name="Velocity Decline" required>
+Consistent decrease in learning velocity over 7+ days
+</ParamField>
+
+<ParamField name="Mastery Stagnation" required>
+Mastery probability fails to increase despite correct answers
+</ParamField>
+
+<ParamField name="Efficiency Drop" required>
+Cognitive efficiency decreases while difficulty remains constant
+</ParamField>
+
+### Example Detection
+
+```python
+plateau_signals = {
+    "velocity_declining": True,
+    "velocity_days": 10,
+    "mastery_stagnant": True,
+    "mastery_attempts": 15,
+    "efficiency_dropping": True,
+    "efficiency_trend": -0.15,
+    "plateau_confidence": "high"
+}
+```
+
+## Automatic Detection
+
+The engine automatically monitors for plateau conditions:
+
+```python
+from cognition_engine import CognitionEngine
+
+engine = CognitionEngine(supabase_url, supabase_key)
+
+# Track an answer
+result = await engine.track_answer(
+    user_id="student_123",
+    skill_id="algebra",
+    is_correct=True,
+    time_spent_seconds=60
+)
+
+if result['plateau_detected']:
+    print("⚠️ Plateau detected!")
+    print(f"Confidence: {result['plateau_confidence']}")
+    print(f"Recommendation: {result['recommendation']}")
+```
+
+## Intervention Strategies
+
+### Plateau Severity Levels
+
+<Warning type="warning">
+**Mild Plateau**: Slight velocity decrease, may self-correct
+</Warning>
+
+<Warning type="error">
+**Moderate Plateau**: Clear stagnation, intervention recommended
+</Warning>
+
+<Warning type="danger">
+**Severe Plateau**: Declining performance, urgent intervention needed
+</Warning>
+
+### Recommended Interventions
+
+#### 1. Difficulty Adjustment
+
+```python
+intervention = {
+    "type": "difficulty_adjustment",
+    "current_difficulty": "medium",
+    "recommended_difficulty": "easy",
+    "reasoning": "Return to fundamentals to rebuild confidence"
+}
+```
+
+#### 2. Topic Change
+
+```python
+intervention = {
+    "type": "topic_switch",
+    "current_skill": "trigonometry",
+    "recommended_skill": "algebra",
+    "reasoning": "Switch to a different area to maintain engagement"
+}
+```
+
+#### 3. Practice Frequency
+
+```python
+intervention = {
+    "type": "frequency_change",
+    "current_sessions": 3,
+    "recommended_sessions": 5,
+    "reasoning": "Increase practice to break through plateau"
+}
+```
+
+#### 4. Learning Mode
+
+```python
+intervention = {
+    "type": "learning_mode",
+    "current_mode": "practice",
+    "recommended_mode": "review",
+    "reasoning": "Emphasize review and reinforcement over new problems"
+}
+```
+
+## Manual Plateau Check
+
+Check for plateaus programmatically:
+
+```python
+plateau_status = await engine.check_plateau_status("student_123", "algebra")
+
+if plateau_status['is_plateauing']:
+    print(f"Plateau since: {plateau_status['started_date']}")
+    print(f"Current severity: {plateau_status['severity']}")
+    print(f"Interventions: {plateau_status['recommendations']}")
+```
+
+## Prevention Strategies
+
+### Early Warning Signals
+
+Monitor these metrics to catch plateaus before they fully develop:
+
+<AccordionGroup>
+  <Accordion title="Velocity Slowdown">
+    Learning velocity begins to decrease even slightly. First warning sign.
+  </Accordion>
+
+  <Accordion title="Mastery Resistance">
+    Correct answers fail to increase mastery probability as expected. Core indicator.
+  </Accordion>
+
+  <Accordion title="Increased Time">
+    Students taking longer on similar problems. Cognitive load increasing.
+  </Accordion>
+
+  <Accordion title="Confidence Drop">
+    Lower confidence scores despite same difficulty level. Uncertainty growing.
+  </Accordion>
+</AccordionGroup>
+
+## Real-World Example
+
+### Student Story
+
+```python
+# Week 1-2: Strong progress
+{
+    "velocity": 0.035,
+    "efficiency": 0.82,
+    "mastery": 0.65
+}
+
+# Week 3: Early warning
+{
+    "velocity": 0.022,      # Declining
+    "efficiency": 0.75,     # Dropping
+    "mastery": 0.68         # Slow growth
+}
+
+# Week 4: Plateau confirmed
+{
+    "velocity": 0.01,       # Minimal progress
+    "efficiency": 0.68,     # Below threshold
+    "mastery": 0.68,        # Stagnant
+    "plateau_detected": True
+}
+
+# Intervention: Switch topics
+# Result: Recovery and continued progress
+{
+    "velocity": 0.030,
+    "efficiency": 0.80,
+    "mastery": 0.72
+}
+```
+
+## Dashboard Integration
+
+Create plateau monitoring dashboards:
+
+```python
+async def get_student_plateau_report(user_id):
+    skills = await get_all_skills(user_id)
+    
+    plateau_report = []
+    for skill in skills:
+        status = await engine.check_plateau_status(user_id, skill.id)
+        if status['is_plateauing']:
+            plateau_report.append({
+                "skill": skill.name,
+                "severity": status['severity'],
+                "recommendation": status['recommendations'][0]
+            })
+    
+    return plateau_report
+```
+
+## Best Practices
+
+<Tip>
+Review plateau status weekly. Early intervention prevents longer stalls.
+</Tip>
+
+<Warning>
+Don't overreact to single day performance drops. Look for trends over 5+ days.
+</Warning>
+
+<Info>
+Plateaus are normal in learning. The key is rapid detection and appropriate intervention.
+</Info>
+
+### Intervention Timing
+
+- **Day 5-7**: Monitor closely, gather data
+- **Day 8-10**: Mild intervention (encouragement, hints)
+- **Day 11+**: Active intervention (difficulty adjustment, topic switch)
+
+## Measuring Intervention Effectiveness
+
+Track recovery after intervention:
+
+```python
+recovery_metrics = {
+    "pre_intervention_velocity": 0.01,
+    "post_intervention_velocity": 0.025,
+    "recovery_days": 3,
+    "effectiveness": "good"
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Learning Velocity"
+    icon="gauge"
+    href="/guides/velocity"
+  >
+    Understand velocity tracking for plateau detection
+  </Card>
+  <Card
+    title="Integration Guide"
+    icon="plug"
+    href="/guides/integration"
+  >
+    Learn how to integrate plateau detection
+  </Card>
+</CardGroup>
+

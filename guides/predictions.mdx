@@ -1,0 +1,263 @@
+---
+title: "Predictive Analytics"
+description: "Forecast learning outcomes with confidence intervals"
+---
+
+## Overview
+
+The Cognitive Learning Engine uses advanced predictive analytics to forecast student performance, estimate goal achievement timelines, and provide data-driven study recommendations.
+
+## Score Predictions
+
+### Basic Usage
+
+```python
+from cognition_engine import CognitionEngine
+
+engine = CognitionEngine(supabase_url, supabase_key)
+
+# Get predictions
+predictions = await engine.get_predictions("student_123")
+
+print(f"Current SAT Math: {predictions['current_math']}")
+print(f"Predicted SAT Math in 30 days: {predictions['predicted_math_in_30_days']}")
+print(f"Goal progress: {predictions['goal_progress_percent']}%")
+```
+
+### Prediction Response
+
+```python
+{
+    "current_math": 620,
+    "current_rw": 580,
+    "current_total": 1200,
+    "predicted_math_in_30_days": 680,
+    "predicted_rw_in_30_days": 640,
+    "predicted_total_in_30_days": 1320,
+    "confidence_intervals": {
+        "math": {"low": 660, "high": 700},
+        "rw": {"low": 620, "high": 660},
+        "total": {"low": 1290, "high": 1350}
+    },
+    "goal_tracking": {
+        "target_score": 1400,
+        "days_to_goal": 45,
+        "progress_percent": 75,
+        "on_track": True
+    }
+}
+```
+
+## How Predictions Work
+
+### Linear Regression Model
+
+Predictions use linear regression based on historical performance trends:
+
+<Steps>
+  <Step title="Data Collection">
+    Collect all practice session scores over the last 60 days
+  </Step>
+  <Step title="Trend Analysis">
+    Calculate linear trend using least squares regression
+  </Step>
+  <Step title="Projection">
+    Extend trend line to target date
+  </Step>
+  <Step title="Confidence Intervals">
+    Calculate prediction intervals based on historical variance
+  </Step>
+</Steps>
+
+### Factors Influencing Predictions
+
+<AccordionGroup>
+  <Accordion title="Historical Trends">
+    Recent performance trajectory heavily weights predictions. Accelerating students see upward projections.
+  </Accordion>
+
+  <Accordion title="Learning Velocity">
+    Current velocity directly impacts predicted improvement rates.
+  </Accordion>
+
+  <Accordion title="Practice Frequency">
+    More consistent practice leads to more reliable predictions and faster projected gains.
+  </Accordion>
+
+  <Accordion title="Cognitive Efficiency">
+    Students with higher efficiency metrics progress faster than those with lower efficiency.
+  </Accordion>
+</AccordionGroup>
+
+## Goal Tracking
+
+### Setting Goals
+
+Track progress toward specific score targets:
+
+```python
+# Student wants 1400 total SAT score
+goal_tracking = predictions['goal_tracking']
+
+if goal_tracking['on_track']:
+    print(f"On track! {goal_tracking['days_to_goal']} days to goal")
+else:
+    print(f"Need to accelerate by {goal_tracking['acceleration_needed']}")
+```
+
+### Goal Metrics
+
+<ParamField name="Days to Goal" required>
+Estimated days until target score is reached
+</ParamField>
+
+<ParamField name="Progress Percent" required>
+Current progress toward goal as percentage
+</ParamField>
+
+<ParamField name="On Track Status" required>
+Boolean indicating whether trajectory will reach goal
+</ParamField>
+
+## Confidence Intervals
+
+### Understanding Confidence Ranges
+
+```python
+"confidence_intervals": {
+    "math": {"low": 660, "high": 700},
+    "rw": {"low": 620, "high": 660},
+    "total": {"low": 1290, "high": 1350}
+}
+```
+
+<Info>
+Confidence intervals represent the range where we expect the actual score to fall with 95% probability. Narrower intervals indicate more reliable predictions.
+</Info>
+
+### Factors Affecting Confidence
+
+- **Sample size**: More data = narrower intervals
+- **Consistency**: Steady progress = more confidence
+- **Recency**: Recent data weighted more heavily
+- **Variability**: Lower variance = tighter estimates
+
+<Warning>
+Predictions become less reliable beyond 60 days. Always use recent velocity data for long-term projections.
+</Warning>
+
+## Recommendations
+
+The engine provides personalized study recommendations based on predictions:
+
+```python
+recommendations = predictions['recommendations']
+
+for rec in recommendations:
+    print(f"{rec['priority']}: {rec['action']}")
+    print(f"Expected impact: {rec['impact']}")
+```
+
+Example recommendations:
+
+<Tip>
+**High Priority**: Focus on Reading/Writing fundamentals - largest growth opportunity  
+**Expected Impact**: +25 points in 30 days
+</Tip>
+
+<Info>
+**Medium Priority**: Increase math practice frequency by 20%  
+**Expected Impact**: Accelerate trajectory by 5 days
+</Info>
+
+## Scenario Planning
+
+### Optimistic Scenario
+
+```python
+scenarios = predictions['scenarios']
+
+print(f"Optimistic: {scenarios['optimistic']}")
+# Assumes: Increased practice, improved efficiency
+```
+
+### Conservative Scenario
+
+```python
+print(f"Conservative: {scenarios['conservative']}")
+# Assumes: Current pace continues
+```
+
+### Realistic Scenario
+
+```python
+print(f"Realistic: {scenarios['realistic']}")
+# Most likely outcome based on current trajectory
+```
+
+## Best Practices
+
+<Tip>
+Review predictions weekly to track progress and adjust goals as needed.
+</Tip>
+
+<Warning>
+Don't make significant decisions based on predictions beyond 60 days. Short-term projections are more reliable.
+</Warning>
+
+<Info>
+Combine predictions with velocity analysis for the most complete picture of future performance.
+</Info>
+
+## Limitations
+
+### What Predictions Can't Account For
+
+- **Life events**: Unexpected disruptions to study routine
+- **Curriculum changes**: New topics not yet practiced
+- **Motivation shifts**: Changes in student engagement
+- **Test anxiety**: Performance under pressure vs. practice
+
+### Improving Prediction Accuracy
+
+1. **More practice data**: Aim for 50+ sessions per subject
+2. **Consistent frequency**: Regular practice improves reliability
+3. **Recent updates**: Keep velocity current with fresh data
+4. **Diverse problems**: Mix difficulty levels and topics
+
+## Integration Example
+
+```python
+# Dashboard integration
+async def get_student_dashboard(user_id):
+    predictions = await engine.get_predictions(user_id)
+    velocity = await engine.get_learning_velocity(user_id)
+    
+    return {
+        "current_score": predictions['current_total'],
+        "predicted_score": predictions['predicted_total_in_30_days'],
+        "goal_progress": predictions['goal_tracking']['progress_percent'],
+        "momentum": velocity['momentum_score'],
+        "recommendations": predictions['recommendations']
+    }
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Learning Velocity"
+    icon="gauge"
+    href="/guides/velocity"
+  >
+    Understand how velocity powers predictions
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api/introduction"
+  >
+    Explore the complete API documentation
+  </Card>
+</CardGroup>
+

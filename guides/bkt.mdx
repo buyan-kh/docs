@@ -1,0 +1,208 @@
+---
+title: "Bayesian Knowledge Tracing"
+description: "Advanced mastery tracking using Bayesian inference"
+---
+
+## What is Bayesian Knowledge Tracing?
+
+Bayesian Knowledge Tracing (BKT) is a probabilistic framework that models student knowledge as a hidden state. Every answer provides evidence about the student's true understanding, allowing us to update our beliefs about their mastery in real-time.
+
+## The Four BKT Parameters
+
+<ParamField name="P(L0)" default="0.25" required>
+Prior knowledge probability - our initial belief about student mastery before any observations
+</ParamField>
+
+<ParamField name="P(T)" default="0.10" required>
+Learning rate (transition probability) - probability that a student learns the skill after attempting a problem
+</ParamField>
+
+<ParamField name="P(G)" default="0.25" required>
+Guess probability - probability of a correct answer without mastery
+</ParamField>
+
+<ParamField name="P(S)" default="0.10" required>
+Slip probability - probability of an incorrect answer despite having mastery
+</ParamField>
+
+## How BKT Works
+
+### Step 1: Prior Belief
+
+When we first encounter a skill, we initialize mastery with P(L0):
+
+```python
+initial_mastery = 0.25  # We assume 25% chance student knows the skill
+```
+
+### Step 2: Posterior Update
+
+After each answer, we update our belief using Bayesian inference:
+
+```python
+def bayesian_update(prior, is_correct, p_guess, p_slip):
+    if is_correct:
+        # Student got it right
+        likelihood = (prior * (1 - p_slip)) + ((1 - prior) * p_guess)
+        posterior = (prior * (1 - p_slip)) / likelihood
+    else:
+        # Student got it wrong
+        likelihood = (prior * p_slip) + ((1 - prior) * (1 - p_guess))
+        posterior = (prior * p_slip) / likelihood
+    return posterior
+```
+
+### Step 3: Learning Transition
+
+We account for potential learning during the attempt:
+
+```python
+def apply_learning_transition(posterior, p_learn):
+    # The student might have learned after seeing the problem
+    return posterior + (p_learn * (1 - posterior))
+```
+
+## Implementation Example
+
+```python
+from cognition_engine import CognitionEngine
+
+engine = CognitionEngine(supabase_url, supabase_key)
+
+# Track an answer
+result = await engine.track_answer(
+    user_id="student_123",
+    skill_id="algebra_linear",
+    is_correct=True,
+    time_spent_seconds=45,
+    confidence_score=4
+)
+
+print(f"Mastery before: {result['mastery_before']:.3f}")
+print(f"Mastery after: {result['mastery_after']:.3f}")
+print(f"Velocity: {result['velocity']:.4f}")
+```
+
+## Key Features
+
+### Adaptive Parameters
+
+BKT parameters can be customized per skill based on domain characteristics:
+
+```python
+# Math problems might have different parameters than reading
+math_params = {
+    "prior_knowledge": 0.20,      # Lower initial assumption
+    "learn_rate": 0.12,           # Faster learning
+    "guess_probability": 0.15,    # Lower guessing
+    "slip_probability": 0.08       # Lower mistakes
+}
+```
+
+### Plateau Detection
+
+The engine automatically detects learning plateaus:
+
+```python
+if result['plateau_detected']:
+    print("Learning plateau detected - intervention recommended")
+    # Trigger personalized help or change difficulty
+```
+
+### Velocity Tracking
+
+Learning velocity measures the rate of mastery improvement:
+
+```python
+velocity = result['velocity']
+if velocity > 0.1:
+    print("Accelerating - keep pushing!")
+elif velocity < -0.05:
+    print("Declining - consider review")
+```
+
+## Cognitive Efficiency Integration
+
+BKT mastery probability is enhanced with cognitive efficiency metrics:
+
+<AccordionGroup>
+  <Accordion title="Time-Based Calibration">
+    Students who answer quickly with high confidence should show different mastery than those who struggle through guesses.
+  </Accordion>
+
+  <Accordion title="Confidence Scores">
+    Self-reported confidence (1-5) provides additional signal about true understanding beyond correctness alone.
+  </Accordion>
+
+  <Accordion title="Hesitation Patterns">
+    Answer changes and time spent provide insights into cognitive effort and uncertainty.
+  </Accordion>
+</AccordionGroup>
+
+## BKT vs. Traditional Tracking
+
+<ComparisonTable>
+  <ComparisonRow
+    feature="Knowledge Model"
+    whatOursDoes="Binary (know/doesn't know)"
+    whatOursShouldDo="Probabilistic (belief distribution)"
+  />
+  <ComparisonRow
+    feature="Update Frequency"
+    whatOursDoes="After completion"
+    whatOursShouldDo="Every single answer"
+  />
+  <ComparisonRow
+    feature="Confidence"
+    whatOursDoes="No confidence measure"
+    whatOursShouldDo="Probability-based confidence"
+  />
+  <ComparisonRow
+    feature="Learning Detection"
+    whatOursDoes="No model of learning process"
+    whatOursShouldDo="Explicit learning transitions"
+  />
+</ComparisonTable>
+
+## Best Practices
+
+<Warning>
+Avoid overfitting parameters to small datasets. Use default parameters for most skills and only customize when you have substantial data.
+</Warning>
+
+<Tip>
+Combine BKT mastery probability with velocity analysis and cognitive efficiency for the most complete picture of student understanding.
+</Tip>
+
+<Info>
+BKT works best when students attempt at least 5-10 problems per skill. Below this threshold, mastery estimates are less reliable.
+</Info>
+
+## Research Background
+
+BKT is based on research from Carnegie Mellon University's Human-Computer Interaction Institute. Our implementation extends the classic model with:
+
+- **Cognitive efficiency integration**: Time and confidence weighting
+- **Plateau detection**: Automatic intervention triggers
+- **Velocity analysis**: Momentum and acceleration tracking
+- **Adaptive parameters**: Skill-specific tuning
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Learning Velocity"
+    icon="gauge"
+    href="/guides/velocity"
+  >
+    Understand how we analyze learning momentum
+  </Card>
+  <Card
+    title="Cognitive Efficiency"
+    icon="chart-mixed"
+    href="/guides/efficiency"
+  >
+    Learn about multi-dimensional efficiency metrics
+  </Card>
+</CardGroup>
+

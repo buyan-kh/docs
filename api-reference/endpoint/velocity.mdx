@@ -1,0 +1,74 @@
+---
+title: "Get Learning Velocity"
+description: "Analyze learning momentum and trends"
+---
+
+## GET /api/v1/velocity/{user_id}
+
+Get comprehensive learning velocity analytics including momentum, trends, and efficiency metrics.
+
+## Request
+
+<ParamField name="user_id" path required>
+Unique identifier for the student
+</ParamField>
+
+### Query Parameters
+
+<ParamField name="skill_id">
+Filter by specific skill/topic (optional)
+</ParamField>
+
+<ParamField name="days" default="30">
+Number of days to analyze (optional)
+</ParamField>
+
+## Response
+
+<ResponseField name="momentum_score" type="integer">
+Composite momentum score (0-100)
+</ResponseField>
+
+<ResponseField name="velocity_trend" type="string">
+Trend direction: "accelerating", "stable", or "declining"
+</ResponseField>
+
+<ResponseField name="overall_velocity" type="float">
+Average velocity across all skills
+</ResponseField>
+
+<ResponseField name="consistency" type="float">
+Consistency of performance (0-1)
+</ResponseField>
+
+<ResponseField name="activity_level" type="float">
+Recent practice frequency (0-1)
+</ResponseField>
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "momentum_score": 75,
+    "velocity_trend": "accelerating",
+    "overall_velocity": 0.025,
+    "consistency": 0.88,
+    "activity_level": 0.92,
+    "cognitive_efficiency": 0.78,
+    "skill_velocities": {
+      "algebra": 0.035,
+      "geometry": 0.020,
+      "trigonometry": 0.015
+    }
+  }
+}
+```
+
+## Status Codes
+
+<ResponseStatus code="200" display="Success">Velocity data retrieved</ResponseStatus>
+<ResponseStatus code="401" display="Unauthorized">Invalid API key</ResponseStatus>
+<ResponseStatus code="404" display="Not Found">User not found</ResponseStatus>
+

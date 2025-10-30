@@ -1,0 +1,345 @@
+---
+title: "Deployment Guide"
+description: "Deploy the Cognitive Learning Engine to production"
+---
+
+## Deployment Options
+
+### Option 1: Using the API Service
+
+Best for: Most use cases, hosted solution
+
+<Steps>
+  <Step title="Get API Key">
+    Contact support to obtain your API key for the hosted service.
+  </Step>
+
+  <Step title="Configure Environment">
+```bash
+export COGNITION_API_KEY="your-api-key"
+export COGNITION_API_URL="https://api.cognition-engine.com"
+```
+  </Step>
+
+  <Step title="Start Using">
+```python
+from cognition_engine import CognitionEngine
+
+engine = CognitionEngine(api_key="your-api-key")
+```
+  </Step>
+</Steps>
+
+### Option 2: Self-Hosted SDK
+
+Best for: Full control, on-premise deployments
+
+### Option 3: Docker Deployment
+
+Best for: Consistent environments, container orchestration
+
+## Docker Deployment
+
+### Basic Dockerfile
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Expose API port
+EXPOSE 8000
+
+# Run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Docker Compose
+
+```yaml
+version: '3.8'
+
+services:
+  cognition-engine:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+```
+
+### Build and Run
+
+```bash
+# Build image
+docker build -t cognition-engine .
+
+# Run container
+docker run -p 8000:8000 \
+  -e SUPABASE_URL="your-url" \
+  -e SUPABASE_KEY="your-key" \
+  cognition-engine
+```
+
+## Kubernetes Deployment
+
+### Deployment Configuration
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cognition-engine
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cognition-engine
+  template:
+    metadata:
+      labels:
+        app: cognition-engine
+    spec:
+      containers:
+      - name: cognition-engine
+        image: cognition-engine:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: SUPABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: supabase-secrets
+              key: url
+        - name: SUPABASE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: supabase-secrets
+              key: key
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+```
+
+### Service Configuration
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: cognition-engine-service
+spec:
+  selector:
+    app: cognition-engine
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
+  type: LoadBalancer
+```
+
+## Environment Configuration
+
+### Required Variables
+
+<ParamField name="SUPABASE_URL" required>
+Your Supabase project URL
+</ParamField>
+
+<ParamField name="SUPABASE_KEY" required>
+Your Supabase anon key
+</ParamField>
+
+<ParamField name="API_KEY" required>
+API key for authentication (if using API service)
+</ParamField>
+
+### Optional Variables
+
+<ParamField name="LOG_LEVEL" default="INFO">
+Logging level (DEBUG, INFO, WARNING, ERROR)
+</ParamField>
+
+<ParamField name="MAX_WORKERS" default="4">
+Number of worker processes
+</ParamField>
+
+<ParamField name="REDIS_URL">
+Redis URL for caching
+</ParamField>
+
+## Health Checks
+
+### Health Check Endpoint
+
+```python
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(),
+        "version": "1.0.0"
+    }
+```
+
+### Kubernetes Health Checks
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 5
+  periodSeconds: 5
+```
+
+## Monitoring
+
+### Metrics Collection
+
+```python
+from prometheus_client import Counter, Histogram
+
+# Track metrics
+api_requests = Counter('api_requests_total', 'Total API requests')
+response_time = Histogram('api_response_time', 'API response time')
+
+@app.middleware("http")
+async def track_metrics(request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    
+    api_requests.inc()
+    response_time.observe(time.time() - start_time)
+    
+    return response
+```
+
+### Logging Setup
+
+```python
+import logging
+import sys
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('cognition_engine.log')
+    ]
+)
+```
+
+## Scaling Considerations
+
+### Horizontal Scaling
+
+- Run multiple instances behind a load balancer
+- Use Redis for shared session state
+- Ensure database connection pooling
+
+### Vertical Scaling
+
+- Increase worker processes for CPU-bound tasks
+- Add more memory for large data processing
+- Use async processing for I/O-bound operations
+
+### Database Connection Pooling
+
+```python
+from sqlalchemy.pool import QueuePool
+
+engine = create_engine(
+    database_url,
+    poolclass=QueuePool,
+    pool_size=20,
+    max_overflow=40
+)
+```
+
+## Security
+
+### API Key Management
+
+<Warning>
+Never commit API keys to version control. Use environment variables or secret management services.
+</Warning>
+
+### Rate Limiting
+
+```python
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
+
+@app.post("/track-answer")
+@limiter.limit("100/minute")
+async def track_answer(request: Request, ...):
+    ...
+```
+
+### Data Encryption
+
+- Use HTTPS for all API communication
+- Encrypt sensitive data at rest
+- Implement authentication and authorization
+
+## Backup & Recovery
+
+### Database Backups
+
+```bash
+# Automated backup script
+pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
+```
+
+### Recovery Procedures
+
+1. Restore database from latest backup
+2. Verify data integrity
+3. Restart services
+4. Monitor logs for errors
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Integration Guide"
+    icon="plug"
+    href="/guides/integration"
+  >
+    Learn how to integrate with your platform
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api/introduction"
+  >
+    Explore the complete API documentation
+  </Card>
+</CardGroup>
+

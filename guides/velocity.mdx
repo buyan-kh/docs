@@ -1,0 +1,216 @@
+---
+title: "Learning Velocity"
+description: "Track momentum and optimize study schedules"
+---
+
+## What is Learning Velocity?
+
+Learning velocity measures the **rate of improvement** in student mastery over time. Unlike simple progress tracking, velocity reveals whether students are accelerating, maintaining steady progress, or approaching plateaus.
+
+## Key Metrics
+
+<ParamField name="Overall Velocity" required>
+Average change in mastery across all skills over time
+</ParamField>
+
+<ParamField name="Skill Velocity" required>
+Velocity for individual skills or topics
+</ParamField>
+
+<ParamField name="Velocity Trend" required>
+Whether velocity is increasing, decreasing, or stable
+</ParamField>
+
+<ParamField name="Momentum Score" required>
+Composite score (0-100) combining velocity, consistency, and activity level
+</ParamField>
+
+## Understanding Momentum Score
+
+The momentum score is calculated from multiple factors:
+
+```python
+{
+    "momentum_score": 85,           # 0-100 composite score
+    "velocity_trend": "accelerating", # accelerating, stable, declining
+    "consistency": 0.92,             # How consistent performance is
+    "activity_level": 0.88,          # Recent practice frequency
+    "cognitive_efficiency": 0.75     # Time-effectiveness ratio
+}
+```
+
+<Info>
+Momentum scores above 70 indicate strong progress. Scores below 40 suggest intervention may be needed.
+</Info>
+
+## Velocity Analysis
+
+### Example Usage
+
+```python
+from cognition_engine import CognitionEngine
+
+engine = CognitionEngine(supabase_url, supabase_key)
+
+# Get velocity analytics
+velocity = await engine.get_learning_velocity("student_123")
+
+print(f"Momentum: {velocity['momentum_score']}/100")
+print(f"Trend: {velocity['velocity_trend']}")
+print(f"Consistency: {velocity['consistency']:.2f}")
+```
+
+### Velocity Trend Interpretation
+
+<AccordionGroup>
+  <Accordion title="Accelerating">
+    Velocity is increasing. The student is learning faster over time. This often indicates growing confidence and efficiency.
+  </Accordion>
+
+  <Accordion title="Stable">
+    Velocity remains consistent. Steady progress without signs of plateau. This is typically healthy learning.
+  </Accordion>
+
+  <Accordion title="Declining">
+    Velocity is decreasing. May indicate upcoming plateau or burnout. Consider intervention or difficulty adjustment.
+  </Accordion>
+</AccordionGroup>
+
+## Velocity vs. Mastery
+
+<ComparisonTable>
+  <ComparisonRow
+    feature="Mastery"
+    whatOursDoes="What the student knows now"
+    whatOursShouldDo="Probability of correct performance"
+  />
+  <ComparisonRow
+    feature="Velocity"
+    whatOursDoes="How fast mastery is changing"
+    whatOursShouldDo="Rate of improvement"
+  />
+  <ComparisonRow
+    feature="Use Case"
+    whatOursDoes="Current ability assessment"
+    whatOursShouldDo="Future trajectory prediction"
+  />
+  <ComparisonRow
+    feature="Timeframe"
+    whatOursDoes="Snapshot (now)"
+    whatOursShouldDo="Trend (over time)"
+  />
+</ComparisonTable>
+
+## Optimizing Study Schedules
+
+### High Momentum
+
+When momentum is high (70+), students can:
+
+- **Increase difficulty** - Challenge with harder problems
+- **Cover more topics** - Introduce new skills efficiently
+- **Reduce frequency** - Maintain retention with spaced practice
+
+### Low Momentum
+
+When momentum is low (<40), consider:
+
+- **Review fundamentals** - Strengthen foundation skills
+- **Reduce difficulty** - Build confidence with easier problems
+- **Increase frequency** - More practice to build proficiency
+
+## Real-World Example
+
+```python
+# Student profile
+velocity_data = {
+    "momentum_score": 68,
+    "velocity_trend": "stable",
+    "overall_velocity": 0.023,
+    "skill_velocities": {
+        "algebra": 0.035,    # Strong progress
+        "geometry": 0.015,   # Moderate progress
+        "trigonometry": -0.01 # Declining - needs attention
+    }
+}
+
+# Personalized recommendation
+if velocity_data['skill_velocities']['trigonometry'] < 0:
+    print("Recommended: Focus on trigonometry fundamentals")
+    print("Difficulty adjustment: Lower current level")
+    print("Frequency: Increase practice sessions")
+```
+
+## Integration with Predictions
+
+Velocity data powers predictive analytics:
+
+```python
+# Velocity influences score predictions
+predictions = await engine.get_predictions("student_123")
+
+print(f"30-day prediction: {predictions['predicted_total_in_30_days']}")
+print(f"Velocity contribution: {predictions['velocity_boost']}")
+print(f"Days to goal: {predictions['days_to_goal']}")
+```
+
+<Warning>
+Low or negative velocity for extended periods can significantly impact future score predictions and goal achievement timelines.
+</Warning>
+
+## Advanced Features
+
+### Multi-Dimensional Velocity
+
+Track velocity across different dimensions:
+
+- **By skill**: Individual topic velocity
+- **By difficulty**: Easy vs. hard problem velocity
+- **By time of day**: Morning vs. evening performance
+- **By session type**: Practice vs. test velocity
+
+### Acceleration Tracking
+
+Monitor whether velocity itself is changing:
+
+```python
+"acceleration": {
+    "value": 0.002,           # Positive = speeding up
+    "trend": "increasing",    # Direction of acceleration change
+    "significance": "high"    # Statistical confidence
+}
+```
+
+## Best Practices
+
+<Tip>
+Review velocity trends weekly for early plateau detection. Declining trends caught early are easier to address.
+</Tip>
+
+<Info>
+Combine velocity analysis with cognitive efficiency metrics for comprehensive learning optimization.
+</Info>
+
+<Warning>
+Don't overreact to single-day velocity changes. Focus on trends over 5-7 day periods.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Predictive Analytics"
+    icon="crystal-ball"
+    href="/guides/predictions"
+  >
+    Learn how velocity powers score predictions
+  </Card>
+  <Card
+    title="Plateau Detection"
+    icon="exclamation-triangle"
+    href="/guides/plateaus"
+  >
+    Understand how we identify and address learning plateaus
+  </Card>
+</CardGroup>
+
